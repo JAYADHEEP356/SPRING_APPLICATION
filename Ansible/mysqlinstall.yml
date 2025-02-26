@@ -1,0 +1,43 @@
+---
+- name: Install MySQL on Ubuntu 18.04
+  hosts: vm2
+  become: yes
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+  tasks:
+
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Install MySQL server
+      apt:
+        name: mysql-server
+        state: present
+
+    - name: Start and enable MySQL service
+      systemd:
+        name: mysql
+        state: started
+        enabled: yes
+
+    - name: Install Python MySQL dependencies
+      apt:
+        name: python3-pymysql
+        state: present
+
+    - name: Create MySQL user with all privileges
+      mysql_user:
+        name: myuser
+        password: mypassword
+        priv: "*.*:ALL"
+        host: "%"
+        state: present
+
+    - name: Ensure MySQL root user has a password
+      mysql_user:
+        name: root
+        password: admin
+        priv: "*.*:ALL"
+        state: present
+        login_unix_socket: /var/run/mysqld/mysqld.sock

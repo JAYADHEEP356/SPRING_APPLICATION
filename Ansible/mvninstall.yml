@@ -1,0 +1,51 @@
+- name: Install Maven 3.9.6 on localhost
+  hosts: localhost
+  become: yes
+  tasks:
+
+    - name: Ensure required packages are installed
+      apt:
+        name:
+          - wget
+          - tar
+        state: present
+        update_cache: yes
+
+    - name: Download Apache Maven 3.9.6
+      get_url:
+        url: "https://dlcdn.apache.org/maven/maven-3/3.9.6/binaries/apache-maven-3.9.6-bin.tar.gz"
+        dest: "/tmp/apache-maven-3.9.6-bin.tar.gz"
+
+    - name: Extract Maven
+      unarchive:
+        src: "/tmp/apache-maven-3.9.6-bin.tar.gz"
+        dest: "/opt/"
+        remote_src: yes
+
+    - name: Create symbolic link to Maven
+      file:
+        src: "/opt/apache-maven-3.9.6"
+        dest: "/opt/maven"
+        state: link
+
+    - name: Set environment variables for Maven globally
+      copy:
+        dest: "/etc/profile.d/maven.sh"
+        content: |
+          export MAVEN_HOME=/opt/maven
+          export PATH=$MAVEN_HOME/bin:$PATH
+      mode: '0755'
+
+    - name: Load environment variables
+      shell: source /etc/profile.d/maven.sh
+      args:
+        executable: /bin/bash
+
+    - name: Verify Maven installation
+      command: mvn -version
+      register: maven_version
+      changed_when: false
+
+    - name: Display Maven version
+      debug:
+        msg: "{{ maven_version.stdout }}"

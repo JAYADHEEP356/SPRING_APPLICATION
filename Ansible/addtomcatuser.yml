@@ -1,0 +1,23 @@
+---
+- name: Update Tomcat users
+  hosts: vm2
+  become: yes
+  tasks:
+
+    - name: Ensure required roles and user exist in tomcat-users.xml
+      blockinfile:
+        path: /etc/tomcat9/tomcat-users.xml
+        marker: "<!-- {mark} ANSIBLE MANAGED BLOCK -->"
+        insertbefore: "</tomcat-users>"
+        block: |
+          <role rolename="manager-gui"/>
+          <role rolename="manager-script"/> <!-- ADD THIS -->
+          <role rolename="admin-gui"/>
+          <user username="admin" password="admin" roles="manager-gui,manager-script,admin-gui"/>
+      notify: Restart Tomcat
+
+  handlers:
+    - name: Restart Tomcat
+      systemd:
+        name: tomcat9
+        state: restarted

@@ -1,0 +1,53 @@
+---
+- name: Install Jenkins on Ubuntu 18.04
+  hosts: vm1
+  become: yes
+
+  tasks:
+
+    - name: Add Jenkins repository key
+      shell: "curl -fsSL https://pkg.jenkins.io/debian/jenkins.io-2023.key | sudo tee /usr/share/keyrings/jenkins-keyring.asc > /dev/null"
+
+    - name: Add Jenkins repository
+      apt_repository:
+        repo: "deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/"
+        state: present
+
+    - name: Update the apt package list
+      apt:
+        update_cache: yes
+
+    - name: Download init-system-helpers 1.57
+      get_url:
+        url: "http://archive.ubuntu.com/ubuntu/pool/main/i/init-system-helpers/init-system-helpers_1.57_all.deb"
+        dest: "/tmp/init-system-helpers_1.57_all.deb"
+
+    - name: Install init-system-helpers 1.57
+      command: "dpkg -i /tmp/init-system-helpers_1.57_all.deb"
+
+
+    - name: Update the apt package list
+      apt:
+        update_cache: yes
+
+    - name: Install Java (OpenJDK 17)
+      apt:
+        name: openjdk-17-jdk
+        state: present
+
+    - name: Install Jenkins
+      apt:
+        name: jenkins
+        state: present
+
+    - name: Ensure Jenkins is started and enabled
+      service:
+        name: jenkins
+        state: started
+        enabled: yes
+
+    - name: Retrieve initialAdminPassword file
+      fetch:
+        src: /var/lib/jenkins/secrets/initialAdminPassword
+        dest: "{{ playbook_dir }}/initialAdminPassword"
+        flat: yes

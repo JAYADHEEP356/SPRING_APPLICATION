@@ -1,0 +1,62 @@
+pipeline {
+    agent any
+
+    tools {
+        maven 'mvn'
+    }
+
+    environment {
+        SC_URL = 'https://github.com/ranandraj/devops-bootcamp.git'
+        WAR_FILE = 'onlinebookstore/target/onlinebookstore.war'
+        TOMCAT_URL = 'http://192.168.56.11:8090'
+        TOMCAT_CREDENTIALS = '214221e5-b527-41a2-9531-1c4b744e3297'
+        WEBAPP_NAME = 'book'
+    }
+
+    stages {
+        stage('Code Checkout') {
+            steps {
+                git branch: 'main', url: SC_URL
+            }
+        }
+
+        stage('Code Build') {
+            steps {
+                sh 'cd onlinebookstore && mvn clean compile'
+            }
+        }
+
+        stage('Code Test') {
+            steps {
+                sh 'cd onlinebookstore && mvn test'
+            }
+        }
+
+        stage('Code Package') {
+            steps {
+                sh 'cd onlinebookstore && mvn package'
+            }
+        }
+
+        stage('Package Deploy') {
+            steps {
+                script {
+                    deploy adapters: [tomcat9(credentialsId: TOMCAT_CREDENTIALS, 
+                                              path: '', 
+                                              url: TOMCAT_URL)], 
+                           war: WAR_FILE, 
+                           contextPath: WEBAPP_NAME
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Deployment successful!'
+        }
+        failure {
+            echo 'Deployment failed!'
+        }
+    }
+}

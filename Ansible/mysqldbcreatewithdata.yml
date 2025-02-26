@@ -1,0 +1,22 @@
+---
+- name: Execute SQL Commands on MySQL
+  hosts: vm2
+  become: yes
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+  tasks:
+
+    - name: Install Python MySQL dependencies
+      apt:
+        name: python3-pymysql
+        state: present
+
+    - name: Copy SQL file to target system
+      copy:
+        src: onlinebookstore.sql
+        dest: /tmp/onlinebookstore.sql
+
+    - name: Execute SQL file in MySQL using shell
+      shell: mysql -u root -padmin < /tmp/onlinebookstore.sql
+      args:
+        executable: /bin/bash

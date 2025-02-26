@@ -1,0 +1,35 @@
+---
+- name: Install and Configure Tomcat 9 on Ubuntu 18.04
+  hosts: vm2
+  become: yes
+  tasks:
+
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Install Tomcat 9 and Admin package
+      apt:
+        name:
+          - tomcat9
+          - tomcat9-admin
+        state: present
+
+    - name: Start and enable Tomcat 9 service
+      systemd:
+        name: tomcat9
+        state: started
+        enabled: yes
+
+    - name: Change Tomcat port to 8090
+      replace:
+        path: /etc/tomcat9/server.xml
+        regexp: 'port="8080"'
+        replace: 'port="8090"'
+      notify: Restart Tomcat
+
+  handlers:
+    - name: Restart Tomcat
+      systemd:
+        name: tomcat9
+        state: restarted

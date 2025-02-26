@@ -1,0 +1,25 @@
+---
+- name: Install Docker on Ubuntu using docker.io package
+  hosts: vm2
+  become: yes  # Use sudo for the tasks
+  tasks:
+    - name: Update apt package cache
+      apt:
+        update_cache: yes
+
+    - name: Install docker.io package
+      apt:
+        name: docker.io
+        state: present
+
+    - name: Ensure Docker service is started and enabled
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Add user to Docker group (optional)
+      user:
+        name: "{{ ansible_user }}"
+        group: docker
+        append: yes
