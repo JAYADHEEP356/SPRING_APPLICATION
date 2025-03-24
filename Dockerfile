@@ -4,6 +4,6 @@ RUN mvn clean package -DSkipTests
 
 
 FROM openjdk:21-slim
-COPY --from=build /target/QUIZ-0.0.1-SNAPSHOT.jar-0.0.1 QUIZ.jar
+COPY --from=build /target/QUIZ-0.0.1-SNAPSHOT.jar QUIZ.jar
 EXPOSE 8080
 ENTRYPOINT ["java","-jar","QUIZ.jar"]
