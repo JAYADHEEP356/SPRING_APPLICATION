@@ -90,7 +90,7 @@ public class User {
         return endTime;
     }
 
-    public long getTotalTime() {
+    public Long getTotalTime() {
         return totalTime;
     }
 

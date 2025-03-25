@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Controller
 public class AppController {
@@ -190,20 +191,30 @@ public class AppController {
     }
 
     @GetMapping("/leaderBoard")
-    public String LeaderBoard(Model model){
+    public String LeaderBoard(Model model) {
 
-        HashMap<User,Double> scoreMap = questionLoader2.LeaderBoard();
+        HashMap<User, Double> scoreMap = questionLoader2.LeaderBoard();
         System.out.println("first map: ");
 
+        // **Filter users with null totalTime before inserting into TreeMap**
+        Map<User, Double> filteredScoreMap = scoreMap.entrySet().stream()
+                .filter(entry -> entry.getKey().getTotalTime() != null) // Remove users with null totalTime
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+        // Now, create TreeMap safely
         TreeMap<User, Double> userScores = new TreeMap<>((u1, u2) -> {
-            int scoreCompare = Double.compare(scoreMap.get(u2), scoreMap.get(u1)); // Higher score first
+            Double score1 = filteredScoreMap.get(u1);
+            Double score2 = filteredScoreMap.get(u2);
+
+            int scoreCompare = Double.compare(score2, score1); // Higher score first
             return (scoreCompare != 0) ? scoreCompare : Long.compare(u1.getTotalTime(), u2.getTotalTime()); // Lower totalTime first
         });
 
-        userScores.putAll(scoreMap);
+        // Add only the filtered entries
+        userScores.putAll(filteredScoreMap);
+
         System.out.println(userScores);
-        model.addAttribute("map",userScores);
+        model.addAttribute("map", userScores);
         return "leaderboard";
     }
-
 }
