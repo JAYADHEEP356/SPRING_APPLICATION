@@ -80,6 +80,10 @@ public class AppController {
                              @RequestParam("malpractice") boolean malpractice,
                              Model model) {
 
+        if (malpractice) {
+            System.out.println("Malpractice detected!");
+        }
+
         User user = userService.findByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
         int index = map.get(user.getUsername());
         if (index < questionLoader2.getQuestionList().size()) {
